@@ -18,12 +18,12 @@ const play = (accessToken: string, deviceId: string) => {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      uris: ["spotify:track:0VjIjW4GlUZAMYd2vXMi3b"],
+      uris: ["spotify:track:2BTZIqw0ntH9MvilQ3ewNY"],
     }),
   });
 };
 
-const pause = (accessToken: string, deviceId: string) => {
+const stop = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
     method: "PUT",
     headers: {
@@ -32,11 +32,24 @@ const pause = (accessToken: string, deviceId: string) => {
   });
 };
 
+const getAlbums = (accessToken: string, albumId: string) => {
+  console.log(albumId);
+  return fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+    .then((nameAlbum) => nameAlbum.json())
+    .then((json) => json.tracks.items[0].uri);
+};
+
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
   const [deviceId, player] = useSpotifyPlayer(accessToken);
+  const [text, setText] = useState("");
 
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
@@ -64,11 +77,24 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       <p>{currentTrack}</p>
       <button
         onClick={() => {
-          paused ? play(accessToken, deviceId) : pause(accessToken, deviceId);
+          paused ? play(accessToken, deviceId) : stop(accessToken, deviceId);
         }}
       >
       {paused ? "play" : "stop"}
       </button>
+
+      <button
+        onClick={() => {
+          const monText =getAlbums(accessToken, "1ATL5GLyefJaxhQzSPVrLX")
+          setText(monText);
+        }}
+      >
+        xxxxxxxxxx
+      </button>
+      
+      
+      <p> {text}</p>
+      
     </Layout>
   );
 };
