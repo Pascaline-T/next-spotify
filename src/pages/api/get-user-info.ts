@@ -22,3 +22,5 @@ export default async (request: NextApiRequest, response: NextApiResponse): Promi
     response.end();
   }
 };
+
+// ("https://open.spotify.com/embed/album/6i6folBtxKV28WX3msQ4FE");

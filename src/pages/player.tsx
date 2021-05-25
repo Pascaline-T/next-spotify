@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import React from "react";
 import { SpotifyState, SpotifyUser } from "../types/spotify";
+import { createPublicKey } from "crypto";
 
 interface Props {
   user: SpotifyUser;
@@ -18,7 +19,7 @@ const play = (accessToken: string, deviceId: string) => {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      uris: ["spotify:track:1lCRw5FEZ1gPDNPzy1K4zW"],
+      uris: ["spotify:track:51Of5p3lKZeOg6itfs4og4"],
     }),
   });
 };
@@ -31,6 +32,19 @@ const pause = (accessToken: string, deviceId: string) => {
     },
   });
 };
+
+//recherche d'un album lien + traitement Json en dur
+// const getAlbums = (accessToken: string, albumId: string) => {
+//   console.log(albumId);
+//   return fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
+//     method: "GET",
+//     headers: {
+//       Authorization: `Bearer ${accessToken}`,
+//     },
+//   })
+//     .then((nameAlbum) => nameAlbum.json())
+//     .then((json) => json.tracks.items[0].uri);
+// };
 
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
@@ -67,8 +81,10 @@ const Player: NextPage<Props> = ({ accessToken }) => {
           paused ? play(accessToken, deviceId) : pause(accessToken, deviceId);
         }}
       >
-      {paused ? "play" : "stop"}
+        {paused ? "play" : "stop"}
       </button>
+
+      {/* {console.log(getAlbums(accessToken, "1ATL5GLyefJaxhQzSPVrLX"))} */}
     </Layout>
   );
 };
