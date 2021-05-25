@@ -19,7 +19,7 @@ const play = (accessToken: string, deviceId: string) => {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      uris: ["spotify:track:51Of5p3lKZeOg6itfs4og4"],
+      uris: ["spotify:track:0VjIjW4GlUZAMYd2vXMi3b"],
     }),
   });
 };
