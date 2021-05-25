@@ -4,7 +4,7 @@ import Cookies from "cookies";
 import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import React, { useState } from "react";
-import { SpotifyState, SpotifyUser } from "../types/spotify";
+import { SpotifyState, SpotifyTrack, SpotifyUser } from "../types/spotify";
 interface Props {
   user: SpotifyUser;
   accessToken: string;
@@ -16,9 +16,11 @@ const play = (accessToken: string, deviceId: string) => {
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
-      uris: ["spotify:track/0TK2YIli7K1leLovkQiNik"],
+      uris: ["spotify:track/0TlLq3lA83rQOYtrqBqSct"],
     }),
   });
+  // .then((result) => result.json())
+  // .then((play) => console.log(play));
 };
 const pause = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
@@ -29,28 +31,48 @@ const pause = (accessToken: string, deviceId: string) => {
   });
 };
 const getAlbums = (accessToken: string, albumId: string) => {
-  console.log(albumId);
-  return fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
+  //console.log(albumId);
+  return fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-  });
+  })
+    .then((nameAlbum) => nameAlbum.json())
+    .then((json) => {
+      json.items.map((element: SpotifyTrack) => {
+        console.log(element.uri);
+        //setText(element.uri);
+      });
+    });
 };
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
   const [deviceId, player] = useSpotifyPlayer(accessToken);
-  const [text, setText] = useState("");
-  getAlbums(accessToken, "1ATL5GLyefJaxhQzSPVrLX")
-    .then((nameAlbum) => nameAlbum.json())
-    .then((json) => setText(json.tracks.items[0].uri));
+  const [text, setText] = React.useState("");
+  console.log("device Id " + deviceId);
+
+  getAlbums(accessToken, "1ATL5GLyefJaxhQzSPVrLX");
+  // .then((nameAlbum) => nameAlbum.json())
+  // .then((json) => {
+  //   json.items.map((element: SpotifyTrack) => {
+  //     //console.log(element.uri);
+  //     setText(element.uri);
+  //   });
+  // });
+
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
       setPaused(state.paused);
       setCurrentTrack(state.track_window.current_track.name);
     };
+
+    // const nextStateChanged = (state: SpotifyState) => {
+    //   setText(state.track_window.next_tracks);
+    // };
+
     if (player) {
       player.addListener("player_state_changed", playerStateChanged);
     }
@@ -63,11 +85,13 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
   const user = data;
+
   return (
     <Layout isLoggedIn={true}>
       <div className="container-fluid">
         <h1>Player</h1>
         <p>Welcome {user && user.display_name}</p>
+        <p>Welcome </p>
         <p>{currentTrack}</p>
         <button
           onClick={() => {
@@ -89,7 +113,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
               <a className="nav-link" href="#">
                 Link
               </a>
-              <a className="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">
+              <a className="nav-link disabled" href="#" aria-disabled="true">
                 Disabled
               </a>
             </nav>
