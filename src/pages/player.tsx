@@ -5,11 +5,13 @@ import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import React from "react";
 import { SpotifyState, SpotifyUser } from "../types/spotify";
+import { access } from "fs";
 
 interface Props {
   user: SpotifyUser;
   accessToken: string;
 }
+
 const play = (accessToken: string, deviceId: string, position: number) => {
   return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
     method: "PUT",
@@ -20,6 +22,15 @@ const play = (accessToken: string, deviceId: string, position: number) => {
       uris: ["spotify:track:1lCRw5FEZ1gPDNPzy1K4zW"],
       position_ms: position, //started at "x" ms
     }),
+  });
+};
+
+const volume = (accessToken: string) => {
+  return fetch("https://api.spotify.com/v1/me/player/volume?volume_percent=0", {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
   });
 };
 
@@ -39,6 +50,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [deviceId, player] = useSpotifyPlayer(accessToken);
   const [position, setPosition] = React.useState<number>(0);
   const [duration, setDuration] = React.useState<number>(0);
+  // const [vol, setvolume] = React.useState<number>(0);
 
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
@@ -46,6 +58,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       setCurrentTrack(state.track_window.current_track.name);
       setPosition(state.position);
       setDuration(state.duration);
+      setvolume(1);
     };
     if (player) {
       player.addListener("player_state_changed", playerStateChanged);
