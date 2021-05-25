@@ -33,6 +33,7 @@ export const Layout: React.FC<Props> = ({ children, isLoggedIn, spotifyLoginUrl 
       <Head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"></link>
       </Head>
       <NavBar isLoggedIn={isLoggedIn} spotifyLoginUrl={spotifyLoginUrl} />
       <main>{children}</main>
