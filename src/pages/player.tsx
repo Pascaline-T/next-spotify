@@ -10,7 +10,8 @@ interface Props {
   user: SpotifyUser;
   accessToken: string;
 }
-const play = (accessToken: string, deviceId: string, position: number) => {
+
+const play = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
     method: "PUT",
     headers: {
@@ -18,8 +19,16 @@ const play = (accessToken: string, deviceId: string, position: number) => {
     },
     body: JSON.stringify({
       uris: ["spotify:track:1lCRw5FEZ1gPDNPzy1K4zW"],
-      position_ms: position, //started at "x" ms
     }),
+  });
+};
+
+const resume = (accessToken: string) => {
+  return fetch(`https://api.spotify.com/v1/me/player/play`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
   });
 };
 
@@ -34,6 +43,7 @@ const pause = (accessToken: string, deviceId: string) => {
 
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
+  const [start, setStart] = React.useState<boolean>(false);
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
   const [deviceId, player] = useSpotifyPlayer(accessToken);
@@ -68,10 +78,11 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       <p>{currentTrack}</p>
       <button
         onClick={() => {
-          paused ? play(accessToken, deviceId, position) : pause(accessToken, deviceId);
+          paused ? (start ? resume(accessToken) : play(accessToken, deviceId)) : pause(accessToken, deviceId);
+          setStart(true);
         }}
       >
-        {paused ? "Play" : "Pause"}
+        {paused ? (start ? "Resume" : "Play") : "Pause"}
       </button>
       <p>
         {/* Not dynamic yet */}
