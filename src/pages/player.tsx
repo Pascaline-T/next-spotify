@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import React, { useState } from "react";
 import { SpotifyState, SpotifyTrack, SpotifyUser } from "../types/spotify";
+
 interface Props {
   user: SpotifyUser;
   accessToken: string;
@@ -18,9 +19,9 @@ const play = (accessToken: string, deviceId: string) => {
     body: JSON.stringify({
       uris: ["spotify:track/0TlLq3lA83rQOYtrqBqSct"],
     }),
-  });
-  // .then((result) => result.json())
-  // .then((play) => console.log(play));
+  })
+    .then((result) => result.json())
+    .then((play) => console.log(play));
 };
 const pause = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
@@ -30,49 +31,43 @@ const pause = (accessToken: string, deviceId: string) => {
     },
   });
 };
-const getAlbums = (accessToken: string, albumId: string) => {
+const getAlbums = async (accessToken: string, albumId: string) => {
   //console.log(albumId);
   return fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
-  })
-    .then((nameAlbum) => nameAlbum.json())
-    .then((json) => {
-      json.items.map((element: SpotifyTrack) => {
-        console.log(element.uri);
-        //setText(element.uri);
-      });
-    });
+  });
+  // .then((nameAlbum) => nameAlbum.json())
+  // .then((json) => {
+  //   json.items.map((element: SpotifyTrack) => {
+  //     console.log(element.uri);
+  //     //setText(element.uri);
+  //     const list = element.uri;
+  //   });
+  // });
 };
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
   const [deviceId, player] = useSpotifyPlayer(accessToken);
-  const [text, setText] = React.useState("");
-  console.log("device Id " + deviceId);
+  const [text, setText] = React.useState([]);
 
-  getAlbums(accessToken, "1ATL5GLyefJaxhQzSPVrLX");
-  // .then((nameAlbum) => nameAlbum.json())
-  // .then((json) => {
-  //   json.items.map((element: SpotifyTrack) => {
-  //     //console.log(element.uri);
-  //     setText(element.uri);
-  //   });
-  // });
-
+  //});
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
       setPaused(state.paused);
       setCurrentTrack(state.track_window.current_track.name);
+      getAlbums(accessToken, "1ATL5GLyefJaxhQzSPVrLX")
+        .then((nameAlbum) => nameAlbum.json())
+        .then((json) => {
+          //   json.items.map((element: SpotifyTrack) => {
+          //     //console.log(element.uri);
+          setText(json.items);
+        });
     };
-
-    // const nextStateChanged = (state: SpotifyState) => {
-    //   setText(state.track_window.next_tracks);
-    // };
-
     if (player) {
       player.addListener("player_state_changed", playerStateChanged);
     }
@@ -85,7 +80,6 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
   const user = data;
-
   return (
     <Layout isLoggedIn={true}>
       <div className="container-fluid">
@@ -100,7 +94,8 @@ const Player: NextPage<Props> = ({ accessToken }) => {
         >
           {paused ? "play" : "stop"}
         </button>
-        <p>{text}</p>
+        <p>{text.map((element: SpotifyTrack) => element.uri)} </p>
+
         <div className="d-flex justify-content-start">
           <div className="w-25 p-3">
             <nav className="nav flex-column navbar-dark bg-dark">
