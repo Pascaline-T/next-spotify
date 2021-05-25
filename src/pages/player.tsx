@@ -23,6 +23,15 @@ const play = (accessToken: string, deviceId: string) => {
   });
 };
 
+const resume = (accessToken: string) => {
+  return fetch(`https://api.spotify.com/v1/me/player/play`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
 const pause = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
     method: "PUT",
@@ -34,14 +43,19 @@ const pause = (accessToken: string, deviceId: string) => {
 
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
+  const [start, setStart] = React.useState<boolean>(false);
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
   const [deviceId, player] = useSpotifyPlayer(accessToken);
+  const [position, setPosition] = React.useState<number>(0);
+  const [duration, setDuration] = React.useState<number>(0);
 
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
       setPaused(state.paused);
       setCurrentTrack(state.track_window.current_track.name);
+      setPosition(state.position);
+      setDuration(state.duration);
     };
     if (player) {
       player.addListener("player_state_changed", playerStateChanged);
@@ -64,11 +78,16 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       <p>{currentTrack}</p>
       <button
         onClick={() => {
-          paused ? play(accessToken, deviceId) : pause(accessToken, deviceId);
+          paused ? (start ? resume(accessToken) : play(accessToken, deviceId)) : pause(accessToken, deviceId);
+          setStart(true);
         }}
       >
-      {paused ? "play" : "stop"}
+        {paused ? (start ? "Resume" : "Play") : "Pause"}
       </button>
+      <p>
+        {/* Not dynamic yet */}
+        Duration : {Math.round(position / 1000)} / {Math.floor(duration * 10 ** -3) / 60}
+      </p>
     </Layout>
   );
 };
