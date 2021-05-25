@@ -4,7 +4,7 @@ import Cookies from "cookies";
 import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import React from "react";
-import { SpotifyState, SpotifyUser } from "../types/spotify";
+import { SpotifyState, SpotifyTrack, SpotifyUser } from "../types/spotify";
 
 interface Props {
   user: SpotifyUser;
@@ -41,11 +41,21 @@ const pause = (accessToken: string, deviceId: string) => {
   });
 };
 
+const trackInfos = (accessToken: string) => {
+  return fetch(`https://api.spotify.com/v1/tracks/6SvRYfsIeNSVV2EAH7I9P0`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
   const [start, setStart] = React.useState<boolean>(false);
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
+  const [trackState, setTrackState] = React.useState();
   const [deviceId, player] = useSpotifyPlayer(accessToken);
   const [position, setPosition] = React.useState<number>(0);
   const [duration, setDuration] = React.useState<number>(0);
@@ -56,7 +66,11 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       setCurrentTrack(state.track_window.current_track.name);
       setPosition(state.position);
       setDuration(state.duration);
+      trackInfos(accessToken)
+        .then((response) => response.json())
+        .then((response) => setTrackState(response.name));
     };
+
     if (player) {
       player.addListener("player_state_changed", playerStateChanged);
     }
@@ -88,6 +102,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
         {/* Not dynamic yet */}
         Duration : {Math.round(position / 1000)} / {Math.floor(duration * 10 ** -3) / 60}
       </p>
+      <p>{trackState}</p>
     </Layout>
   );
 };
