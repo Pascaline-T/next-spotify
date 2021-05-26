@@ -11,7 +11,6 @@ interface Props {
   accessToken: string;
 }
 
-
 const play = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
     method: "PUT",
@@ -21,9 +20,8 @@ const play = (accessToken: string, deviceId: string) => {
     body: JSON.stringify({
       uris: ["spotify:track/0TlLq3lA83rQOYtrqBqSct"],
     }),
-  })
-}
-
+  });
+};
 
 const pause = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
@@ -34,7 +32,6 @@ const pause = (accessToken: string, deviceId: string) => {
   });
 };
 
-
 const getAlbum = (accessToken: string, id: string) => {
   return fetch(`https://api.spotify.com/v1/albums/${id}`, {
     method: "GET",
@@ -44,20 +41,18 @@ const getAlbum = (accessToken: string, id: string) => {
   });
 };
 
-
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
   const [deviceId, player] = useSpotifyPlayer(accessToken);
-  const [info, setInfo] = React.useState<any>();
-  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd")
-  const [durTotal, setDurTotal] = React.useState<number>(0)
-   
+  const [infosAlbum, setInfosAlbum] = React.useState<any>();
+  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd");
+  const [durTotal, setDurTotal] = React.useState<number>(0);
+
   // getAlbum(accessToken, "7zCODUHkfuRxsUjtuzNqbd")
   // .then((nameAlbum) => nameAlbum.json())
   // .then((json) => console.log(json.images))
-
 
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
@@ -77,22 +72,21 @@ const Player: NextPage<Props> = ({ accessToken }) => {
 
   React.useEffect(() => {
     getAlbum(accessToken, selectAlbum)
-        .then((nameAlbum) => nameAlbum.json())
-        .then((result) => { 
-          setInfo(result)
-        })
-  }, [])
+      .then((nameAlbum) => nameAlbum.json())
+      .then((result) => {
+        setInfosAlbum(result);
+      });
+  }, []);
 
   React.useEffect(() => {
     // console.log(selectAlbum)
     getAlbum(accessToken, selectAlbum)
-        .then((nameAlbum) => nameAlbum.json())
-        .then((result) => { 
-          setInfo(result)
-        })
-        // console.log(info)
-  }, [selectAlbum])
-
+      .then((nameAlbum) => nameAlbum.json())
+      .then((result) => {
+        setInfosAlbum(result);
+      });
+    // console.log(info)
+  }, [selectAlbum]);
 
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
@@ -113,28 +107,45 @@ const Player: NextPage<Props> = ({ accessToken }) => {
         </button>
       </div>
       <div>
-      <button
-          onClick={() => { 
-            return setSelectAlbum("2noRn2Aes5aoNVsU6iWThc")}}>Album 1</button>
-      <button
-          onClick={() => { 
-            return setSelectAlbum("4sLtOBOzn4s3GDUv3c5oJD")}}>Album 2</button>
-        <p><img src={info.images[1].url}/></p>
-        <p>Type : {info.album_type}</p>
-        <p>Nom de l'album : {info.name}</p>
-        <p>Artiste : {info.artists[0].name}</p>
-        <p>Date de sortie : {info.release_date}</p>
-        <p>Nom de piste : {info.total_tracks}</p>
-        {/* <p>Durée totale: {info.tracks.items.map((track: SpotifyTrack) => { 
+        <button
+          onClick={() => {
+            return setSelectAlbum("2noRn2Aes5aoNVsU6iWThc");
+          }}
+        >
+          Album 1
+        </button>
+        <button
+          onClick={() => {
+            return setSelectAlbum("4sLtOBOzn4s3GDUv3c5oJD");
+          }}
+        >
+          Album 2
+        </button>
+        <p>
+          <img src={infosAlbum.images[1].url} />
+        </p>
+        <p>Type : {infosAlbum.album_type}</p>
+        <p>Nom de l'album : {infosAlbum.name}</p>
+        <p>Artiste : {infosAlbum.artists[0].name}</p>
+        <p>Date de sortie : {infosAlbum.release_date}</p>
+        <p>Nombre de piste : {infosAlbum.total_tracks}</p>
+        {/* {/* <p>Durée totale: {infosAlbum.tracks.items.map((track: SpotifyTrack) => { 
           return setDurTotal(durTotal + track.duration_ms)})}</p> */}
-        <p>{info.tracks.items.map((track: SpotifyTrack) => {
-          return (
-          <ul>
-             {/* Faire le typage du temps de la musique */}
-            <li>Nom de la musique : {track.name} <p>Temps de la musique : {parseFloat(track.duration_ms / 60000).toFixed(2)}</p></li>
-          </ul>
-          )
-          })}</p>
+        <p>
+          {infosAlbum.tracks.items.map((track: SpotifyTrack) => {
+            return (
+              <ul>
+                {/* Faire le typage du temps de la musique */}
+                <li>
+                  Nom de la musique : {track.name}
+                  <p>Type : {track.type}</p>
+                  <p>uri : {track.id}</p>
+                  <p>Temps de la musique : {parseFloat(track.duration_ms / 60000).toFixed(2)}</p>
+                </li>
+              </ul>
+            );
+          })}
+        </p>
       </div>
     </Layout>
   );
