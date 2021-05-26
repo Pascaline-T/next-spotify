@@ -3,7 +3,7 @@ import useSpotifyPlayer from "../hooks/useSpotifyPlayer";
 import Cookies from "cookies";
 import useSWR from "swr";
 import { Layout } from "../components/Layout";
-import React, { useState } from "react";
+import React from "react";
 import { SpotifyState, SpotifyTrack, SpotifyUser } from "../types/spotify";
 import {
   play,
@@ -12,15 +12,16 @@ import {
   previousTrack,
   nextTrack,
   volumeTrack,
+  currentPlayback,
   trackInfos,
+  getAlbum,
+  getPlaylist,
 } from "../components/Spotify-api-calls";
-
 
 interface Props {
   user: SpotifyUser;
   accessToken: string;
 }
-
 
 ////Component
 const Player: NextPage<Props> = ({ accessToken }) => {
@@ -29,10 +30,12 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [paused, setPaused] = React.useState(true);
   // const [currentTrack, setCurrentTrack] = React.useState(""); //from boilerplate ; now "selectTrack"
   const [selectTrack, setSelectTrack] = React.useState<string[]>(["track", "0pLT0IT7xKaNlY4HvrWCx7"]);
+  // const [selectTrack, setSelectTrack] = React.useState<string[]>(["album", "0sNOF9WDwhWunNAHPD3Baj"]);
   const [trackInfo, setTrackInfo] = React.useState<any[] | undefined>([""]);
   const [deviceId, player] = useSpotifyPlayer(accessToken);
   const [infosAlbum, setInfosAlbum] = React.useState<any>();
   const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd");
+  const [infosPlaylist, setInfosPlaylist] = React.useState<any>();
   const [durTotal, setDurTotal] = React.useState<number>(0);
   const [position, setPosition] = React.useState<number>(0);
   const [duration, setDuration] = React.useState<number>(0);
@@ -65,6 +68,21 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     };
   }, [player]);
 
+  //// default album useEffect ; to be deleted
+  React.useEffect(() => {
+    getAlbum(accessToken, selectAlbum)
+      .then((nameAlbum) => nameAlbum.json())
+      .then((result) => {
+        setInfosAlbum(result);
+      });
+    // getPlaylist(accessToken, deviceId, "64gvpiwFO2rHEc4LZ36vdu")
+    //   .then((response) => response.json())
+    //   .then((result) => {
+    //     setInfosPlaylist(result);
+    //   });
+  }, []);
+
+  // console.log({ infosPlaylist });
 
   //// selectTrack useEffect
   React.useEffect(() => {
@@ -74,6 +92,9 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       play(accessToken, deviceId, selectTrack[0], selectTrack[1]);
       setStart(true);
     }
+    // currentPlayback(accessToken, deviceId)
+    //   .then((response) => response.json())
+    //   .then((result) => setCurrentPlayback(result));
   }, [selectTrack]);
 
   React.useEffect(() => {
@@ -82,25 +103,13 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       .then((result) => {
         setInfosAlbum(result);
       });
-  }, []);
-
-  React.useEffect(() => {
-    // console.log(selectAlbum)
-    getAlbum(accessToken, selectAlbum)
-      .then((nameAlbum) => nameAlbum.json())
-      .then((result) => {
-        setInfosAlbum(result);
-      });
-    // console.log(info)
   }, [selectAlbum]);
-
 
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
   const user = data;
   return (
     <Layout isLoggedIn={true}>
-
       <h1>Player</h1>
       <h2>Welcome {user && user.display_name}</h2>
       <ul>
@@ -139,7 +148,6 @@ const Player: NextPage<Props> = ({ accessToken }) => {
           Next
         </button>
       </ul>
-
       <ul>
         <button
           onClick={() => {
@@ -151,7 +159,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
 
         <button
           onClick={() => {
-            volumeTrack(accessToken, deviceId, 50);
+            volumeTrack(accessToken, deviceId, 75);
           }}
         >
           Volume up
@@ -159,22 +167,6 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       </ul>
       {/* Not dynamic yet */}
       {/* Duration : {Math.round(position / 1000)} / {Math.floor(duration * 10 ** -3) / 60} */}
-
-      <button
-        onClick={() => {
-          setSelectTrack(["track", "53qkkSKD3fQaZmzA2vGoo4"]);
-        }}
-      >
-        Time traveler - Knower
-      </button>
-
-      <button
-        onClick={() => {
-          setSelectTrack(["track", "28CXe6HJBJYAFUFjHAqZ8U"]);
-        }}
-      >
-        Everybody's a loser - I monster
-      </button>
       <div>
         <button
           onClick={() => {
@@ -193,7 +185,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
         <p>
           <img src={infosAlbum.images[1].url} />
         </p>
-        <p>Type : {infosAlbum.album_type}</p>
+        {/* <p>Type : {infosAlbum.album_type}</p> */}
         <p>Nom de l'album : {infosAlbum.name}</p>
         <p>Artiste : {infosAlbum.artists[0].name}</p>
         <p>Date de sortie : {infosAlbum.release_date}</p>
@@ -206,9 +198,16 @@ const Player: NextPage<Props> = ({ accessToken }) => {
               <ul>
                 {/* Faire le typage du temps de la musique */}
                 <li>
-                  Nom de la musique : {track.name}
-                  <p>Type : {track.type}</p>
-                  <p>uri : {track.id}</p>
+                  <button
+                    onClick={() => {
+                      setSelectTrack([track.type, track.id]);
+                    }}
+                  >
+                    {track.name}
+                  </button>
+                  {/* Nom de la musique : {track.name} */}
+                  {/* <p>Type : {track.type}</p>
+                  <p>uri : {track.id}</p> */}
                   <p>Temps de la musique : {parseFloat(track.duration_ms / 60000).toFixed(2)}</p>
                 </li>
               </ul>
@@ -219,9 +218,9 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     </Layout>
   );
 };
-        
+
 export default Player;
-        
+
 export const getServerSideProps = async (context: GetServerSidePropsContext): Promise<unknown> => {
   const cookies = new Cookies(context.req, context.res);
   const accessToken = cookies.get("spot-next");
