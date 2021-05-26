@@ -5,56 +5,31 @@ import useSWR from "swr";
 import { Layout } from "../components/Layout";
 import React, { useState } from "react";
 import { SpotifyState, SpotifyTrack, SpotifyUser } from "../types/spotify";
+import {
+  play,
+  resume,
+  pause,
+  previousTrack,
+  nextTrack,
+  volumeTrack,
+  trackInfos,
+} from "../components/Spotify-api-calls";
+
 
 interface Props {
   user: SpotifyUser;
   accessToken: string;
 }
 
-const play = (accessToken: string, deviceId: string) => {
-  return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      uris: ["spotify:track/0TlLq3lA83rQOYtrqBqSct"],
-    }),
-  });
-};
 
-const resume = (accessToken: string) => {
-  return fetch(`https://api.spotify.com/v1/me/player/play`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-};
-
-const pause = (accessToken: string, deviceId: string) => {
-  return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-};
-
-const getAlbum = (accessToken: string, id: string) => {
-  return fetch(`https://api.spotify.com/v1/albums/${id}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-};
-
+////Component
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
   const [start, setStart] = React.useState<boolean>(false);
   const [paused, setPaused] = React.useState(true);
-  const [currentTrack, setCurrentTrack] = React.useState("");
+  // const [currentTrack, setCurrentTrack] = React.useState(""); //from boilerplate ; now "selectTrack"
+  const [selectTrack, setSelectTrack] = React.useState<string[]>(["track", "0pLT0IT7xKaNlY4HvrWCx7"]);
+  const [trackInfo, setTrackInfo] = React.useState<any[] | undefined>([""]);
   const [deviceId, player] = useSpotifyPlayer(accessToken);
   const [infosAlbum, setInfosAlbum] = React.useState<any>();
   const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd");
@@ -62,10 +37,20 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [position, setPosition] = React.useState<number>(0);
   const [duration, setDuration] = React.useState<number>(0);
 
+  ////Player useEffect
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
       setPaused(state.paused);
-      setCurrentTrack(state.track_window.current_track.name);
+      // setCurrentTrack(state.track_window.current_track.name); //from boilerplate ; now "selectTrack"
+      setTrackInfo([
+        state.track_window.current_track.id, //string
+        state.track_window.current_track.uri, //string
+        state.track_window.current_track.type, //string
+        state.track_window.current_track.name, //string
+        state.track_window.current_track.duration_ms, //number
+        state.track_window.current_track.artists[0].name, //string
+        state.track_window.current_track.album.name, //string
+      ]);
       setPosition(state.position);
       setDuration(state.duration);
     };
@@ -79,6 +64,17 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       }
     };
   }, [player]);
+
+
+  //// selectTrack useEffect
+  React.useEffect(() => {
+    if (start) {
+      pause(accessToken, deviceId);
+      setStart(false);
+      play(accessToken, deviceId, selectTrack[0], selectTrack[1]);
+      setStart(true);
+    }
+  }, [selectTrack]);
 
   React.useEffect(() => {
     getAlbum(accessToken, selectAlbum)
@@ -98,24 +94,87 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     // console.log(info)
   }, [selectAlbum]);
 
+
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
   const user = data;
   return (
     <Layout isLoggedIn={true}>
-      <div className="container-fluid">
-        <h1>Player</h1>
-        <p>Welcome {user && user.display_name}</p>
-        <p>Welcome </p>
-        <p>{currentTrack}</p>
+
+      <h1>Player</h1>
+      <h2>Welcome {user && user.display_name}</h2>
+      <ul>
+        <p>
+          {trackInfo[3]} - {trackInfo[5]}
+        </p>
+        <p>{trackInfo[6]}</p>
+      </ul>
+      <ul>
         <button
           onClick={() => {
-            paused ? play(accessToken, deviceId) : pause(accessToken, deviceId);
+            previousTrack(accessToken, deviceId);
           }}
         >
-          {paused ? "play" : "stop"}
+          Previous
         </button>
-      </div>
+
+        <button
+          onClick={() => {
+            paused
+              ? start
+                ? resume(accessToken, deviceId)
+                : play(accessToken, deviceId, selectTrack[0], selectTrack[1])
+              : pause(accessToken, deviceId);
+            setStart(true);
+          }}
+        >
+          {paused ? (start ? "Resume" : "Play") : "Pause"}
+        </button>
+
+        <button
+          onClick={() => {
+            nextTrack(accessToken, deviceId);
+          }}
+        >
+          Next
+        </button>
+      </ul>
+
+      <ul>
+        <button
+          onClick={() => {
+            volumeTrack(accessToken, deviceId, 25);
+          }}
+        >
+          Volume down
+        </button>
+
+        <button
+          onClick={() => {
+            volumeTrack(accessToken, deviceId, 50);
+          }}
+        >
+          Volume up
+        </button>
+      </ul>
+      {/* Not dynamic yet */}
+      {/* Duration : {Math.round(position / 1000)} / {Math.floor(duration * 10 ** -3) / 60} */}
+
+      <button
+        onClick={() => {
+          setSelectTrack(["track", "53qkkSKD3fQaZmzA2vGoo4"]);
+        }}
+      >
+        Time traveler - Knower
+      </button>
+
+      <button
+        onClick={() => {
+          setSelectTrack(["track", "28CXe6HJBJYAFUFjHAqZ8U"]);
+        }}
+      >
+        Everybody's a loser - I monster
+      </button>
       <div>
         <button
           onClick={() => {
