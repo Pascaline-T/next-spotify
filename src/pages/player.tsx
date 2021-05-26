@@ -13,14 +13,14 @@ import {
   nextTrack,
   volumeTrack,
   trackInfos,
+  getAlbum,
+  getAlbumsForOneArtist,
 } from "../components/Spotify-api-calls";
-
 
 interface Props {
   user: SpotifyUser;
   accessToken: string;
 }
-
 
 ////Component
 const Player: NextPage<Props> = ({ accessToken }) => {
@@ -31,8 +31,10 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [selectTrack, setSelectTrack] = React.useState<string[]>(["track", "0pLT0IT7xKaNlY4HvrWCx7"]);
   const [trackInfo, setTrackInfo] = React.useState<any[] | undefined>([""]);
   const [deviceId, player] = useSpotifyPlayer(accessToken);
-  const [infosAlbum, setInfosAlbum] = React.useState<any>();
-  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd");
+  const [infosAlbum, setInfosAlbum] = React.useState<any>(); // toutes les infos contenu dans album
+  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd"); // le watcher album the weeknd
+  const [albumsArtist, setAlbumsArtist] = React.useState<any>(); // toutes les infos contenus dans l'artist
+  const [selectArtist, setSelectArtist] = React.useState<string>("1HY2Jd0NmPuamShAr6KMms");
   const [durTotal, setDurTotal] = React.useState<number>(0);
   const [position, setPosition] = React.useState<number>(0);
   const [duration, setDuration] = React.useState<number>(0);
@@ -65,7 +67,6 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     };
   }, [player]);
 
-
   //// selectTrack useEffect
   React.useEffect(() => {
     if (start) {
@@ -91,16 +92,22 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       .then((result) => {
         setInfosAlbum(result);
       });
-    // console.log(info)
   }, [selectAlbum]);
 
+  //// useffect pour les albums d'un artist
+  React.useEffect(() => {
+    getAlbumsForOneArtist(accessToken, selectArtist)
+      .then((albums) => albums.json())
+      .then((result) => {
+        setAlbumsArtist(result);
+      });
+  }, [selectArtist]);
 
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
   const user = data;
   return (
     <Layout isLoggedIn={true}>
-
       <h1>Player</h1>
       <h2>Welcome {user && user.display_name}</h2>
       <ul>
@@ -191,6 +198,39 @@ const Player: NextPage<Props> = ({ accessToken }) => {
           Album 2
         </button>
         <p>
+          <button
+            onClick={() => {
+              return setSelectArtist("7lMgpN1tEBQKpRoUMKB8iw");
+            }}
+          >
+            Artist 1 (black M)
+          </button>
+          <button
+            onClick={() => {
+              return setSelectArtist("4lxfqrEsLX6N1N4OCSkILp");
+            }}
+          >
+            Artist 2 (Phil collins)
+          </button>
+          <p>
+            {albumsArtist.items.map((element: SpotifyTrack) => {
+              return (
+                <ul>
+                  <li>
+                    <img src={element.images[1].url} />
+                    <br />
+                    nom de l'album : {element.name} <br />
+                    nombre total de musique : {element.total_tracks} <br />
+                    type : {element.type} <br />
+                    id : {element.id}
+                  </li>
+                </ul>
+              );
+            })}
+          </p>
+        </p>
+
+        <p>
           <img src={infosAlbum.images[1].url} />
         </p>
         <p>Type : {infosAlbum.album_type}</p>
@@ -206,10 +246,12 @@ const Player: NextPage<Props> = ({ accessToken }) => {
               <ul>
                 {/* Faire le typage du temps de la musique */}
                 <li>
-                  Nom de la musique : {track.name}
-                  <p>Type : {track.type}</p>
-                  <p>uri : {track.id}</p>
-                  <p>Temps de la musique : {parseFloat(track.duration_ms / 60000).toFixed(2)}</p>
+                  Nom de la musique : {track.name} <br />
+                  Type : {track.type}
+                  <br />
+                  uri : {track.id}
+                  <br />
+                  Temps de la musique : {parseFloat(track.duration_ms / 60000).toFixed(2)}
                 </li>
               </ul>
             );
@@ -219,9 +261,9 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     </Layout>
   );
 };
-        
+
 export default Player;
-        
+
 export const getServerSideProps = async (context: GetServerSidePropsContext): Promise<unknown> => {
   const cookies = new Cookies(context.req, context.res);
   const accessToken = cookies.get("spot-next");
