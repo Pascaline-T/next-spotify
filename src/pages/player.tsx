@@ -3,7 +3,7 @@ import useSpotifyPlayer from "../hooks/useSpotifyPlayer";
 import Cookies from "cookies";
 import useSWR from "swr";
 import { Layout } from "../components/Layout";
-import React from "react";
+import React, { useState } from "react";
 import { SpotifyState, SpotifyTrack, SpotifyUser } from "../types/spotify";
 import {
   play,
@@ -15,10 +15,12 @@ import {
   trackInfos,
 } from "../components/Spotify-api-calls";
 
+
 interface Props {
   user: SpotifyUser;
   accessToken: string;
 }
+
 
 ////Component
 const Player: NextPage<Props> = ({ accessToken }) => {
@@ -29,6 +31,9 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [selectTrack, setSelectTrack] = React.useState<string[]>(["track", "0pLT0IT7xKaNlY4HvrWCx7"]);
   const [trackInfo, setTrackInfo] = React.useState<any[] | undefined>([""]);
   const [deviceId, player] = useSpotifyPlayer(accessToken);
+  const [infosAlbum, setInfosAlbum] = React.useState<any>();
+  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd");
+  const [durTotal, setDurTotal] = React.useState<number>(0);
   const [position, setPosition] = React.useState<number>(0);
   const [duration, setDuration] = React.useState<number>(0);
 
@@ -60,6 +65,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     };
   }, [player]);
 
+
   //// selectTrack useEffect
   React.useEffect(() => {
     if (start) {
@@ -70,12 +76,31 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     }
   }, [selectTrack]);
 
+  React.useEffect(() => {
+    getAlbum(accessToken, selectAlbum)
+      .then((nameAlbum) => nameAlbum.json())
+      .then((result) => {
+        setInfosAlbum(result);
+      });
+  }, []);
+
+  React.useEffect(() => {
+    // console.log(selectAlbum)
+    getAlbum(accessToken, selectAlbum)
+      .then((nameAlbum) => nameAlbum.json())
+      .then((result) => {
+        setInfosAlbum(result);
+      });
+    // console.log(info)
+  }, [selectAlbum]);
+
+
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
   const user = data;
-
   return (
     <Layout isLoggedIn={true}>
+
       <h1>Player</h1>
       <h2>Welcome {user && user.display_name}</h2>
       <ul>
@@ -150,11 +175,53 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       >
         Everybody's a loser - I monster
       </button>
+      <div>
+        <button
+          onClick={() => {
+            return setSelectAlbum("2noRn2Aes5aoNVsU6iWThc");
+          }}
+        >
+          Album 1
+        </button>
+        <button
+          onClick={() => {
+            return setSelectAlbum("4sLtOBOzn4s3GDUv3c5oJD");
+          }}
+        >
+          Album 2
+        </button>
+        <p>
+          <img src={infosAlbum.images[1].url} />
+        </p>
+        <p>Type : {infosAlbum.album_type}</p>
+        <p>Nom de l'album : {infosAlbum.name}</p>
+        <p>Artiste : {infosAlbum.artists[0].name}</p>
+        <p>Date de sortie : {infosAlbum.release_date}</p>
+        <p>Nombre de piste : {infosAlbum.total_tracks}</p>
+        {/* {/* <p>Durée totale: {infosAlbum.tracks.items.map((track: SpotifyTrack) => { 
+          return setDurTotal(durTotal + track.duration_ms)})}</p> */}
+        <p>
+          {infosAlbum.tracks.items.map((track: SpotifyTrack) => {
+            return (
+              <ul>
+                {/* Faire le typage du temps de la musique */}
+                <li>
+                  Nom de la musique : {track.name}
+                  <p>Type : {track.type}</p>
+                  <p>uri : {track.id}</p>
+                  <p>Temps de la musique : {parseFloat(track.duration_ms / 60000).toFixed(2)}</p>
+                </li>
+              </ul>
+            );
+          })}
+        </p>
+      </div>
     </Layout>
   );
 };
+        
 export default Player;
-
+        
 export const getServerSideProps = async (context: GetServerSidePropsContext): Promise<unknown> => {
   const cookies = new Cookies(context.req, context.res);
   const accessToken = cookies.get("spot-next");
