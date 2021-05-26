@@ -23,6 +23,15 @@ const play = (accessToken: string, deviceId: string) => {
   });
 };
 
+const resume = (accessToken: string) => {
+  return fetch(`https://api.spotify.com/v1/me/player/play`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
 const pause = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
     method: "PUT",
@@ -43,21 +52,22 @@ const getAlbum = (accessToken: string, id: string) => {
 
 const Player: NextPage<Props> = ({ accessToken }) => {
   const { data, error } = useSWR("/api/get-user-info");
+  const [start, setStart] = React.useState<boolean>(false);
   const [paused, setPaused] = React.useState(true);
   const [currentTrack, setCurrentTrack] = React.useState("");
   const [deviceId, player] = useSpotifyPlayer(accessToken);
   const [infosAlbum, setInfosAlbum] = React.useState<any>();
   const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd");
   const [durTotal, setDurTotal] = React.useState<number>(0);
-
-  // getAlbum(accessToken, "7zCODUHkfuRxsUjtuzNqbd")
-  // .then((nameAlbum) => nameAlbum.json())
-  // .then((json) => console.log(json.images))
+  const [position, setPosition] = React.useState<number>(0);
+  const [duration, setDuration] = React.useState<number>(0);
 
   React.useEffect(() => {
     const playerStateChanged = (state: SpotifyState) => {
       setPaused(state.paused);
       setCurrentTrack(state.track_window.current_track.name);
+      setPosition(state.position);
+      setDuration(state.duration);
     };
 
     if (player) {
@@ -150,7 +160,9 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     </Layout>
   );
 };
+        
 export default Player;
+        
 export const getServerSideProps = async (context: GetServerSidePropsContext): Promise<unknown> => {
   const cookies = new Cookies(context.req, context.res);
   const accessToken = cookies.get("spot-next");

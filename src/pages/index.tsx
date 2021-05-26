@@ -44,6 +44,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         "user-read-email",
         "playlist-read-private",
         "user-read-playback-state",
+        "user-read-currently-playing",
         "user-modify-playback-state",
         "streaming",
       ].join(" "),
