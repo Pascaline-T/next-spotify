@@ -83,6 +83,15 @@ export const getAlbum = (accessToken: string, id: string) => {
   });
 };
 
+export const getAlbumsForOneArtist = (accessToken: string, id: string) => {
+  return fetch(`https://api.spotify.com/v1/artists/${id}/albums`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
 export const getPlaylist = (accessToken: string, deviceId: string, playlist_id: string) => {
   return fetch(`https://api.spotify.com/v1/playlists/${playlist_id}?device_id=${deviceId}`, {
     method: "GET",

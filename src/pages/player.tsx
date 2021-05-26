@@ -15,6 +15,7 @@ import {
   currentPlayback,
   trackInfos,
   getAlbum,
+  getAlbumsForOneArtist,
   getPlaylist,
 } from "../components/Spotify-api-calls";
 
@@ -33,8 +34,10 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   // const [selectTrack, setSelectTrack] = React.useState<string[]>(["album", "0sNOF9WDwhWunNAHPD3Baj"]);
   const [trackInfo, setTrackInfo] = React.useState<any[] | undefined>([""]);
   const [deviceId, player] = useSpotifyPlayer(accessToken);
-  const [infosAlbum, setInfosAlbum] = React.useState<any>();
-  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd");
+  const [infosAlbum, setInfosAlbum] = React.useState<any>(); // toutes les infos contenu dans album
+  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd"); // le watcher album the weeknd
+  const [albumsArtist, setAlbumsArtist] = React.useState<any>(); // toutes les infos contenus dans l'artist
+  const [selectArtist, setSelectArtist] = React.useState<string>("1HY2Jd0NmPuamShAr6KMms");
   const [infosPlaylist, setInfosPlaylist] = React.useState<any>();
   const [durTotal, setDurTotal] = React.useState<number>(0);
   const [position, setPosition] = React.useState<number>(0);
@@ -68,6 +71,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     };
   }, [player]);
 
+
   //// default album useEffect ; to be deleted
   React.useEffect(() => {
     getAlbum(accessToken, selectAlbum)
@@ -81,9 +85,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     //     setInfosPlaylist(result);
     //   });
   }, []);
-
-  // console.log({ infosPlaylist });
-
+  
   //// selectTrack useEffect
   React.useEffect(() => {
     if (start) {
@@ -104,6 +106,24 @@ const Player: NextPage<Props> = ({ accessToken }) => {
         setInfosAlbum(result);
       });
   }, [selectAlbum]);
+
+  React.useEffect(() => {
+    // console.log(selectAlbum)
+    getAlbum(accessToken, selectAlbum)
+      .then((nameAlbum) => nameAlbum.json())
+      .then((result) => {
+        setInfosAlbum(result);
+      });
+  }, [selectAlbum]);
+
+  //// useffect pour les albums d'un artist
+  React.useEffect(() => {
+    getAlbumsForOneArtist(accessToken, selectArtist)
+      .then((albums) => albums.json())
+      .then((result) => {
+        setAlbumsArtist(result);
+      });
+  }, [selectArtist]);
 
   if (error) return <div>failed to load</div>;
   if (!data) return <div>loading...</div>;
@@ -183,6 +203,39 @@ const Player: NextPage<Props> = ({ accessToken }) => {
           Album 2
         </button>
         <p>
+          <button
+            onClick={() => {
+              return setSelectArtist("7lMgpN1tEBQKpRoUMKB8iw");
+            }}
+          >
+            Artist 1 (black M)
+          </button>
+          <button
+            onClick={() => {
+              return setSelectArtist("4lxfqrEsLX6N1N4OCSkILp");
+            }}
+          >
+            Artist 2 (Phil collins)
+          </button>
+          <p>
+            {albumsArtist.items.map((element: SpotifyTrack) => {
+              return (
+                <ul>
+                  <li>
+                    <img src={element.images[1].url} />
+                    <br />
+                    nom de l'album : {element.name} <br />
+                    nombre total de musique : {element.total_tracks} <br />
+                    type : {element.type} <br />
+                    id : {element.id}
+                  </li>
+                </ul>
+              );
+            })}
+          </p>
+        </p>
+
+        <p>
           <img src={infosAlbum.images[1].url} />
         </p>
         {/* <p>Type : {infosAlbum.album_type}</p> */}
@@ -190,7 +243,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
         <p>Artiste : {infosAlbum.artists[0].name}</p>
         <p>Date de sortie : {infosAlbum.release_date}</p>
         <p>Nombre de piste : {infosAlbum.total_tracks}</p>
-        {/* {/* <p>Durée totale: {infosAlbum.tracks.items.map((track: SpotifyTrack) => { 
+        {/* <p>Durée totale: {infosAlbum.tracks.items.map((track: SpotifyTrack) => { 
           return setDurTotal(durTotal + track.duration_ms)})}</p> */}
         <p>
           {infosAlbum.tracks.items.map((track: SpotifyTrack) => {
