@@ -64,3 +64,21 @@ export const trackInfos = (accessToken: string, id: string) => {
     },
   });
 };
+
+export const getAlbum = (accessToken: string, id: string) => {
+  return fetch(`https://api.spotify.com/v1/albums/${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
+export const getAlbumsForOneArtist = (accessToken: string, id: string) => {
+  return fetch(`https://api.spotify.com/v1/artists/${id}/albums`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
