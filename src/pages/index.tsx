@@ -13,8 +13,8 @@ const Index: React.FC<IndexProps> = ({ spotifyLoginUrl }) => {
 
   return (
     <Layout isLoggedIn={user !== undefined} spotifyLoginUrl={spotifyLoginUrl}>
-      {/* <h1>Home page</h1>
-      <p>{user && user.display_name}</p> */}
+      <h1>Home page</h1>
+      <p>{user && user.display_name}</p>
     </Layout>
   );
 };

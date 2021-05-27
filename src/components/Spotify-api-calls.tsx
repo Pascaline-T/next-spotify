@@ -1,22 +1,38 @@
-export const play = (accessToken: string, deviceId: string, type: string, uris: string) => {
-  return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      uris: [`spotify:${type}:${uris}`],
-    }),
-  });
-};
-
-export const resume = (accessToken: string, deviceId: string) => {
-  return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+export const play = (accessToken: string, deviceId: string, type: string, uris: string, position: number) => {
+  if (type === "track") {
+    return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        uris: [`spotify:track:${uris}`],
+        offset: { position: position },
+      }),
+    });
+  } else if (type === "album") {
+    return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        context_uri: `spotify:album:${uris}`,
+        offset: { position: position },
+      }),
+    });
+  } else if (type === "playlist") {
+    return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        context_uri: `spotify:playlist:${uris}`,
+        offset: { position: position },
+      }),
+    });
+  }
 };
 
 export const pause = (accessToken: string, deviceId: string) => {
@@ -46,7 +62,23 @@ export const previousTrack = (accessToken: string, deviceId: string) => {
   });
 };
 
-//WIP →
+const volume = (choice: boolean, currentVolume: number): number => {
+  //// choice = true → "volume up"
+  if (choice) {
+    if (currentVolume <= 95) {
+      return currentVolume + 5;
+    } else {
+      return currentVolume;
+    }
+  } else {
+    if (currentVolume >= 5) {
+      return currentVolume - 5;
+    } else {
+      return currentVolume;
+    }
+  }
+};
+
 export const volumeTrack = (accessToken: string, deviceId: string, volumePercent: number) => {
   return fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${volumePercent}&device_id=${deviceId}`, {
     method: "PUT",
