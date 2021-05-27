@@ -35,6 +35,15 @@ export const play = (accessToken: string, deviceId: string, type: string, uris: 
   }
 };
 
+export const resume = (accessToken: string, deviceId: string) => {
+  return fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
+
 export const pause = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
     method: "PUT",
