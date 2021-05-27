@@ -35,7 +35,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [trackInfo, setTrackInfo] = React.useState<any[] | undefined>([""]);
   const [deviceId, player] = useSpotifyPlayer(accessToken);
   const [infosAlbum, setInfosAlbum] = React.useState<any>(); // toutes les infos contenu dans album
-  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd"); // le watcher album the weeknd
+  const [selectAlbum, setSelectAlbum] = React.useState<any>("7zCODUHkfuRxsUjtuzNqbd"); // le watcher album the weeknd
   const [albumsArtist, setAlbumsArtist] = React.useState<any>(); // toutes les infos contenus dans l'artist
   const [selectArtist, setSelectArtist] = React.useState<string>("1HY2Jd0NmPuamShAr6KMms");
   const [infosPlaylist, setInfosPlaylist] = React.useState<any>();
