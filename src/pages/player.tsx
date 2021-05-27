@@ -42,6 +42,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [durTotal, setDurTotal] = React.useState<number>(0);
   const [position, setPosition] = React.useState<number>(0);
   const [duration, setDuration] = React.useState<number>(0);
+  // const [vol, setvolume] = React.useState<number>(0);
 
   ////Player useEffect
   React.useEffect(() => {

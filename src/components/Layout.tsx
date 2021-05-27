@@ -9,10 +9,10 @@ type Props = {
 const NavBar: React.FC<Props> = ({ isLoggedIn, spotifyLoginUrl }) => {
   return (
     <nav>
-      <p>
-        <a href="/">home</a>
-      </p>
-      {isLoggedIn ? (
+      <nav className="sidebar"></nav>
+      <div className="header"></div>
+      <main></main>
+      {/* {isLoggedIn ? (
         <>
           <p>
             <a href="/api/logout">logout</a>
@@ -22,7 +22,7 @@ const NavBar: React.FC<Props> = ({ isLoggedIn, spotifyLoginUrl }) => {
         <p>
           <a href={spotifyLoginUrl}>login</a>
         </p>
-      )}
+      )} */}
     </nav>
   );
 };
