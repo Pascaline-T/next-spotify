@@ -25,15 +25,6 @@ const play = (accessToken: string, deviceId: string, position: number) => {
   });
 };
 
-const volume = (accessToken: string) => {
-  return fetch("https://api.spotify.com/v1/me/player/volume?volume_percent=0", {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-};
-
 const pause = (accessToken: string, deviceId: string) => {
   return fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
     method: "PUT",
@@ -58,7 +49,6 @@ const Player: NextPage<Props> = ({ accessToken }) => {
       setCurrentTrack(state.track_window.current_track.name);
       setPosition(state.position);
       setDuration(state.duration);
-      setvolume(1);
     };
     if (player) {
       player.addListener("player_state_changed", playerStateChanged);
@@ -75,21 +65,19 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const user = data;
 
   return (
-    <Layout isLoggedIn={true}>
-      <h1>Player</h1>
-      <p>Welcome {user && user.display_name}</p>
-      <p>{currentTrack}</p>
-      <button
-        onClick={() => {
-          paused ? play(accessToken, deviceId, position) : pause(accessToken, deviceId);
-        }}
-      >
-        {paused ? "Play" : "Pause"}
-      </button>
-      <p>
-        {/* Not dynamic yet */}
-        Duration : {Math.round(position / 1000)} / {Math.floor(duration * 10 ** -3) / 60}
-      </p>
+    // <Layout isLoggedIn={true}>
+    //   {/* <p> {user && user.display_name}</p> */}
+    //   {/* <p>{currentTrack}</p> */}
+    //   {/* <button
+    //     onClick={() => {
+    //       paused ? play(accessToken, deviceId, position) : pause(accessToken, deviceId);
+    //     }}
+    //   >
+    //     {paused ? "Play" : "Pause"}
+    //   </button>
+    //   <p> */}
+    //   {/* Not dynamic yet */}
+    //   {/* Duration : {Math.round(position / 1000)} / {Math.floor(duration * 10 ** -3) / 60} */}
     </Layout>
   );
 };
