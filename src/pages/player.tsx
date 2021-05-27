@@ -35,7 +35,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [trackInfo, setTrackInfo] = React.useState<any[] | undefined>([""]);
   const [deviceId, player] = useSpotifyPlayer(accessToken);
   const [infosAlbum, setInfosAlbum] = React.useState<any>(); // toutes les infos contenu dans album
-  const [selectAlbum, setSelectAlbum] = React.useState<string>("7zCODUHkfuRxsUjtuzNqbd"); // le watcher album the weeknd
+  const [selectAlbum, setSelectAlbum] = React.useState<any>("7zCODUHkfuRxsUjtuzNqbd"); // le watcher album the weeknd
   const [albumsArtist, setAlbumsArtist] = React.useState<any>(); // toutes les infos contenus dans l'artist
   const [selectArtist, setSelectArtist] = React.useState<string>("1HY2Jd0NmPuamShAr6KMms");
   const [infosPlaylist, setInfosPlaylist] = React.useState<any>();
@@ -71,7 +71,6 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     };
   }, [player]);
 
-
   //// default album useEffect ; to be deleted
   React.useEffect(() => {
     getAlbum(accessToken, selectAlbum)
@@ -85,7 +84,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
     //     setInfosPlaylist(result);
     //   });
   }, []);
-  
+
   //// selectTrack useEffect
   React.useEffect(() => {
     if (start) {
@@ -222,9 +221,15 @@ const Player: NextPage<Props> = ({ accessToken }) => {
               return (
                 <ul>
                   <li>
-                    <img src={element.images[1].url} />
+                  <img src={element.images[1].url} /> <br />
+                  {/* Bouton qui gère l'affichage des infos d'un album dans une recherche d'artiste de maniere dynamique */}
+                  <button
+                      onClick={() => {
+                        return setSelectAlbum(`${element.id}`);
+                      }}
+                    >nom de l'album : {element.name}
+                    </button>
                     <br />
-                    nom de l'album : {element.name} <br />
                     nombre total de musique : {element.total_tracks} <br />
                     type : {element.type} <br />
                     id : {element.id}
