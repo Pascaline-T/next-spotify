@@ -12,11 +12,11 @@ import {
   previousTrack,
   nextTrack,
   volumeTrack,
-  currentPlayback,
-  trackInfos,
+  // currentPlayback,
+  // trackInfos,
   getAlbum,
   getAlbumsForOneArtist,
-  getPlaylist,
+  // getPlaylist,
 } from "../components/Spotify-api-calls";
 
 interface Props {
@@ -38,10 +38,10 @@ const Player: NextPage<Props> = ({ accessToken }) => {
   const [selectAlbum, setSelectAlbum] = React.useState<any>("7zCODUHkfuRxsUjtuzNqbd"); // le watcher album the weeknd
   const [albumsArtist, setAlbumsArtist] = React.useState<any>(); // toutes les infos contenus dans l'artist
   const [selectArtist, setSelectArtist] = React.useState<string>("1HY2Jd0NmPuamShAr6KMms");
-  const [infosPlaylist, setInfosPlaylist] = React.useState<any>();
-  const [durTotal, setDurTotal] = React.useState<number>(0);
+  // const [infosPlaylist, setInfosPlaylist] = React.useState<any>();
+  // const [durTotal, setDurTotal] = React.useState<number>(0);
   const [position, setPosition] = React.useState<number>(0);
-  const [duration, setDuration] = React.useState<number>(0);
+  // const [duration, setDuration] = React.useState<number>(0);
   // const [vol, setvolume] = React.useState<number>(0);
 
   ////Player useEffect
@@ -60,7 +60,7 @@ const Player: NextPage<Props> = ({ accessToken }) => {
         state.track_window.current_track.album.images[2].url, //string
       ]);
       setPosition(state.position);
-      setDuration(state.duration);
+      // setDuration(state.duration);
     };
 
     if (player) {

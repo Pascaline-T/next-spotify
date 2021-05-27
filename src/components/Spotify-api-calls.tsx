@@ -71,22 +71,22 @@ export const previousTrack = (accessToken: string, deviceId: string) => {
   });
 };
 
-const volume = (choice: boolean, currentVolume: number): number => {
-  //// choice = true → "volume up"
-  if (choice) {
-    if (currentVolume <= 95) {
-      return currentVolume + 5;
-    } else {
-      return currentVolume;
-    }
-  } else {
-    if (currentVolume >= 5) {
-      return currentVolume - 5;
-    } else {
-      return currentVolume;
-    }
-  }
-};
+// const volume = (choice: boolean, currentVolume: number): number => {
+//   //// choice = true → "volume up"
+//   if (choice) {
+//     if (currentVolume <= 95) {
+//       return currentVolume + 5;
+//     } else {
+//       return currentVolume;
+//     }
+//   } else {
+//     if (currentVolume >= 5) {
+//       return currentVolume - 5;
+//     } else {
+//       return currentVolume;
+//     }
+//   }
+// };
 
 export const volumeTrack = (accessToken: string, deviceId: string, volumePercent: number) => {
   return fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${volumePercent}&device_id=${deviceId}`, {
